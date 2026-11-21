@@ -1,12 +1,22 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AnimatePresence, MotionConfig, motion, useScroll, useSpring, useTransform } from "motion/react";
+import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
 import { content, links, type Lang } from "@/content/profile";
+import AgentNetwork from "./AgentNetwork";
+import SmoothScroll from "./SmoothScroll";
+import { JobAgentTerminal, ValidatorDemo } from "./Demos";
 
 const STORAGE_KEY = "lang";
+const EASE = [0.22, 1, 0.36, 1] as const;
 
-function Icon({ name, className = "size-4" }: { name: "github" | "linkedin" | "mail" | "download" | "arrow" | "copy"; className?: string }) {
-  const paths: Record<string, ReactNode> = {
+/* ---------- piezas pequeñas ---------- */
+
+type IconName = "github" | "linkedin" | "mail" | "download" | "arrow" | "copy";
+
+function Icon({ name, className = "size-4" }: { name: IconName; className?: string }) {
+  const paths: Record<IconName, ReactNode> = {
     github: (
       <path
         fill="currentColor"
@@ -43,24 +53,247 @@ function Icon({ name, className = "size-4" }: { name: "github" | "linkedin" | "m
   );
 }
 
-function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+/** Aparece al entrar en pantalla. */
+function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
   return (
-    <section id={id} className="border-t border-line py-16 sm:py-20">
-      <div className="grid gap-8 md:grid-cols-[180px_1fr] md:gap-12">
-        <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-muted md:pt-1">{title}</h2>
-        <div>{children}</div>
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.7, delay, ease: EASE }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** Tarjeta con brillo que sigue al cursor e inclinación 3D suave. */
+function Spotlight({ children, className = "", tilt = false }: { children: ReactNode; className?: string; tilt?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduced = usePrefersReducedMotion();
+  const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    el.style.setProperty("--mx", `${x}px`);
+    el.style.setProperty("--my", `${y}px`);
+    if (tilt && !reduced) {
+      const rx = ((y / r.height) - 0.5) * -5;
+      const ry = ((x / r.width) - 0.5) * 5;
+      el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    }
+  };
+  const onLeave = () => {
+    if (ref.current) ref.current.style.transform = "";
+  };
+  return (
+    <div ref={ref} onPointerMove={onMove} onPointerLeave={onLeave} className={`spotlight rounded-2xl transition-transform duration-300 ease-out ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function SectionHeading({ kicker, title, intro }: { kicker: string; title: string; intro?: string }) {
+  return (
+    <Reveal className="mb-12 max-w-2xl">
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">{kicker}</p>
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">{title}</h2>
+      {intro && <p className="mt-4 text-muted sm:text-lg">{intro}</p>}
+    </Reveal>
+  );
+}
+
+function Tag({ children }: { children: ReactNode }) {
+  return <span className="rounded-full border border-line bg-surface px-2.5 py-0.5 font-mono text-[11px] text-muted">{children}</span>;
+}
+
+/* ---------- hero ---------- */
+
+function Hero({ t, lang }: { t: (typeof content)["es"]; lang: Lang }) {
+  const words = t.hero.hello.split(" ");
+  return (
+    <section className="relative isolate flex min-h-[100svh] items-center overflow-hidden">
+      <div className="grid-bg absolute inset-0 -z-20 opacity-60" />
+      <div className="absolute -left-40 top-10 -z-20 size-[520px] rounded-full bg-accent/15 blur-[120px]" />
+      <div className="absolute -right-40 bottom-0 -z-20 size-[520px] rounded-full bg-accent-2/15 blur-[120px]" />
+      <AgentNetwork className="absolute inset-0 -z-10 size-full" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-b from-transparent to-bg" />
+
+      <div className="mx-auto w-full max-w-6xl px-4 pt-24 pb-16 sm:px-6">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="inline-flex items-center gap-2 rounded-full border border-line bg-bg/60 px-3 py-1 text-xs text-muted backdrop-blur"
+        >
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60" />
+            <span className="relative inline-flex size-2 rounded-full bg-accent" />
+          </span>
+          {t.hero.badge}
+        </motion.p>
+
+        <h1 className="mt-7 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-tight sm:text-7xl lg:text-8xl">
+          {words.map((w, i) => (
+            <motion.span
+              key={w + i}
+              className="inline-block pr-[0.22em]"
+              initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.8, delay: 0.1 + i * 0.12, ease: EASE }}
+            >
+              {w}
+            </motion.span>
+          ))}
+        </h1>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.55, ease: EASE }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={lang}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-gradient mt-6 text-lg font-medium sm:text-2xl"
+            >
+              {t.hero.title}
+            </motion.p>
+          </AnimatePresence>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">{t.hero.summary}</p>
+
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <a
+              href={links.cv[lang]}
+              download
+              className="group inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-bg shadow-[0_0_40px_-8px_var(--accent)] transition hover:shadow-[0_0_60px_-6px_var(--accent)]"
+            >
+              <Icon name="download" />
+              {t.hero.cv}
+            </a>
+            <a
+              href="#contacto"
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-bg/50 px-5 py-3 text-sm font-medium backdrop-blur transition hover:border-fg/40"
+            >
+              {t.hero.contact}
+            </a>
+            <div className="ml-1 flex items-center gap-1">
+              {[
+                { href: links.linkedin, icon: "linkedin" as const, label: "LinkedIn" },
+                { href: links.github, icon: "github" as const, label: "GitHub" },
+                { href: `mailto:${links.email}`, icon: "mail" as const, label: "Email" },
+              ].map((l) => (
+                <a
+                  key={l.label}
+                  href={l.href}
+                  target={l.label === "Email" ? undefined : "_blank"}
+                  rel="noopener noreferrer"
+                  aria-label={l.label}
+                  className="rounded-full p-2.5 text-muted transition hover:bg-surface-strong hover:text-fg"
+                >
+                  <Icon name={l.icon} className="size-5" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.dl
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.9 }}
+          className="mt-16 grid max-w-3xl grid-cols-3 gap-4 border-t border-line pt-8"
+        >
+          {t.hero.stats.map((s) => (
+            <div key={s.label}>
+              <dt className="sr-only">{s.label}</dt>
+              <dd className="text-3xl font-semibold tracking-tight sm:text-4xl">{s.value}</dd>
+              <dd className="mt-1 text-xs leading-snug text-muted sm:text-sm">{s.label}</dd>
+            </div>
+          ))}
+        </motion.dl>
       </div>
     </section>
   );
 }
 
-function Tag({ children }: { children: ReactNode }) {
-  return <span className="rounded-full border border-line px-2.5 py-0.5 text-xs text-muted">{children}</span>;
+/* ---------- experiencia en timeline ---------- */
+
+function Timeline({ t }: { t: (typeof content)["es"] }) {
+  const ref = useRef<HTMLOListElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 75%", "end 60%"] });
+  const scaleY = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1]), { stiffness: 120, damping: 30 });
+
+  return (
+    <ol ref={ref} className="relative space-y-14 pl-8 sm:pl-12">
+      <span className="absolute left-[7px] top-2 bottom-2 w-px bg-line sm:left-[11px]" />
+      <motion.span
+        style={{ scaleY }}
+        className="absolute left-[7px] top-2 bottom-2 w-px origin-top bg-gradient-to-b from-accent via-accent to-accent-2 shadow-[0_0_12px_var(--accent)] sm:left-[11px]"
+      />
+      {t.experience.jobs.map((job, idx) => (
+        <li key={job.org + job.role} className="relative">
+          <span className="absolute -left-8 top-1.5 grid size-[15px] place-items-center rounded-full border border-accent/60 bg-bg sm:-left-12 sm:size-[23px]">
+            <span className="size-1.5 rounded-full bg-accent shadow-[0_0_10px_var(--accent)] sm:size-2" />
+          </span>
+          <Reveal delay={idx === 0 ? 0 : 0.05}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h3 className="text-xl font-semibold">
+                {job.role} <span className="text-muted">·</span> <span className="text-accent">{job.org}</span>
+              </h3>
+              <p className="font-mono text-xs text-muted">{job.period}</p>
+            </div>
+            <p className="mt-1 text-sm text-muted">{job.place}</p>
+            <p className="mt-4 max-w-3xl leading-relaxed text-fg/85">{job.summary}</p>
+            {job.points && (
+              <ul className="mt-3 space-y-1.5 text-muted">
+                {job.points.map((p) => (
+                  <li key={p} className="flex gap-3">
+                    <span className="mt-2.5 size-1 shrink-0 rounded-full bg-accent" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Reveal>
+          {job.bullets && (
+            <>
+              <Reveal>
+                <p className="mt-8 font-mono text-xs uppercase tracking-[0.18em] text-muted">{t.experience.built}</p>
+              </Reveal>
+              <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                {job.bullets.map((b, i) => (
+                  <Reveal key={b.title} delay={i * 0.1} className="h-full">
+                    <Spotlight tilt className="flex h-full flex-col p-5">
+                      <span className="font-mono text-xs text-accent">0{i + 1}</span>
+                      <h4 className="mt-2 font-semibold leading-snug">{b.title}</h4>
+                      <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{b.text}</p>
+                      <p className="mt-4 border-t border-line pt-3 font-mono text-xs text-accent-2">{b.stack}</p>
+                    </Spotlight>
+                  </Reveal>
+                ))}
+              </div>
+            </>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
 }
+
+/* ---------- página ---------- */
 
 export default function Portfolio() {
   const [lang, setLang] = useState<Lang>("es");
   const [copied, setCopied] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 200, damping: 40 });
 
   useEffect(() => {
     let initial: Lang | null = null;
@@ -83,9 +316,9 @@ export default function Portfolio() {
   const t = content[lang];
   const nav = [
     ["experiencia", t.nav.experience],
+    ["en-accion", t.demos.kicker],
     ["proyectos", t.nav.projects],
     ["habilidades", t.nav.skills],
-    ["formacion", t.nav.education],
     ["contacto", t.nav.contact],
   ] as const;
 
@@ -97,13 +330,16 @@ export default function Portfolio() {
     } catch {}
   };
 
-  const featured = t.projects.items.filter((p) => p.featured);
-  const others = t.projects.items.filter((p) => !p.featured);
+  const [main, ...rest] = t.projects.items;
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-line bg-bg/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
+      <MotionConfig reducedMotion="user">
+      <SmoothScroll />
+      <motion.div style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-gradient-to-r from-accent to-accent-2" />
+
+      <header className="fixed inset-x-0 top-0 z-40">
+        <div className="mx-auto mt-3 flex h-14 max-w-6xl items-center justify-between gap-4 rounded-full border border-line bg-bg/60 px-4 backdrop-blur-xl sm:mx-4 sm:px-5 lg:mx-auto">
           <a href="#top" className="font-mono text-sm font-semibold tracking-tight">
             álvaro<span className="text-accent">.</span>valdivia
           </a>
@@ -115,22 +351,23 @@ export default function Portfolio() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <div className="flex rounded-full border border-line p-0.5 font-mono text-xs" role="group" aria-label="Idioma / Language">
+            <div className="relative flex rounded-full border border-line p-0.5 font-mono text-xs" role="group" aria-label="Idioma / Language">
               {(["es", "en"] as const).map((l) => (
                 <button
                   key={l}
                   onClick={() => setLang(l)}
                   aria-pressed={lang === l}
-                  className={`rounded-full px-2.5 py-1 uppercase transition-colors ${lang === l ? "bg-fg text-bg" : "text-muted hover:text-fg"}`}
+                  className={`relative rounded-full px-2.5 py-1 uppercase transition-colors ${lang === l ? "text-bg" : "text-muted hover:text-fg"}`}
                 >
-                  {l}
+                  {lang === l && <motion.span layoutId="lang-pill" className="absolute inset-0 -z-10 rounded-full bg-fg" />}
+                  <span className="relative">{l}</span>
                 </button>
               ))}
             </div>
             <a
               href={links.cv[lang]}
               download
-              className="hidden items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 dark:text-bg sm:inline-flex"
+              className="hidden items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-xs font-semibold text-bg transition hover:shadow-[0_0_24px_-4px_var(--accent)] sm:inline-flex"
             >
               <Icon name="download" className="size-3.5" />
               CV
@@ -139,237 +376,190 @@ export default function Portfolio() {
         </div>
       </header>
 
-      <main id="top" className="mx-auto max-w-5xl px-4 sm:px-6">
-        {/* Hero */}
-        <section className="reveal grid items-center gap-10 py-20 sm:py-28 md:grid-cols-[1fr_auto]">
-          <div>
-            <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-muted">
-              <span className="size-1.5 rounded-full bg-accent" />
-              {t.hero.badge}
-            </p>
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">{t.hero.hello}</h1>
-            <p className="mt-4 text-lg font-medium text-accent sm:text-xl">{t.hero.title}</p>
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">{t.hero.summary}</p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <a
-                href={links.cv[lang]}
-                download
-                className="inline-flex items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-sm font-medium text-bg transition-opacity hover:opacity-85"
-              >
-                <Icon name="download" />
-                {t.hero.cv}
-              </a>
-              <a
-                href="#contacto"
-                className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm font-medium transition-colors hover:border-fg"
-              >
-                {t.hero.contact}
-              </a>
-              <div className="ml-1 flex items-center gap-1">
-                <a href={links.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="rounded-full p-2.5 text-muted transition-colors hover:text-fg">
-                  <Icon name="linkedin" className="size-5" />
-                </a>
-                <a href={links.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="rounded-full p-2.5 text-muted transition-colors hover:text-fg">
-                  <Icon name="github" className="size-5" />
-                </a>
-                <a href={`mailto:${links.email}`} aria-label="Email" className="rounded-full p-2.5 text-muted transition-colors hover:text-fg">
-                  <Icon name="mail" className="size-5" />
-                </a>
+      <main id="top">
+        <Hero t={t} lang={lang} />
+
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          {/* Sobre mí */}
+          <section id="sobre-mi" className="py-24">
+            <SectionHeading kicker={t.about.heading} title={lang === "es" ? "Ingeniería con disciplina de campo" : "Engineering with field discipline"} />
+            <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
+              <Reveal className="space-y-5 text-lg leading-relaxed text-muted sm:text-xl">
+                {t.about.paragraphs.map((p) => (
+                  <p key={p}>{p}</p>
+                ))}
+              </Reveal>
+              <div className="grid gap-3">
+                {t.about.facts.map((f, i) => (
+                  <Reveal key={f.label} delay={i * 0.08}>
+                    <Spotlight className="px-4 py-3">
+                      <p className="font-mono text-[11px] uppercase tracking-wider text-muted">{f.label}</p>
+                      <p className="mt-0.5 font-medium">{f.value}</p>
+                    </Spotlight>
+                  </Reveal>
+                ))}
               </div>
             </div>
-          </div>
-          {/* Hueco para la foto: sustituir por <Image src="/foto.jpg" ... /> cuando exista */}
-          <div
-            aria-hidden="true"
-            className="hidden size-56 place-items-center rounded-full border border-line bg-surface font-mono text-5xl font-semibold text-accent shadow-sm md:grid"
-          >
-            AV
-          </div>
-        </section>
+          </section>
 
-        <Section id="sobre-mi" title={t.about.heading}>
-          <div className="grid gap-10 lg:grid-cols-[1fr_260px]">
-            <div className="space-y-5 text-base leading-relaxed text-muted sm:text-lg">
-              {t.about.paragraphs.map((p) => (
-                <p key={p}>{p}</p>
-              ))}
+          {/* Experiencia */}
+          <section id="experiencia" className="py-24">
+            <SectionHeading kicker={t.experience.heading} title={lang === "es" ? "De los helicópteros a los agentes de IA" : "From helicopters to AI agents"} />
+            <Timeline t={t} />
+          </section>
+
+          {/* Demos */}
+          <section id="en-accion" className="py-24">
+            <SectionHeading kicker={t.demos.kicker} title={t.demos.heading} intro={t.demos.intro} />
+            <div className="grid gap-8 lg:grid-cols-2">
+              <Reveal>
+                <JobAgentTerminal demo={t.demos.agent} />
+              </Reveal>
+              <Reveal delay={0.1}>
+                <ValidatorDemo demo={t.demos.validator} />
+              </Reveal>
             </div>
-            <dl className="space-y-4 text-sm">
-              {t.about.facts.map((f) => (
-                <div key={f.label} className="border-l-2 border-accent pl-3">
-                  <dt className="font-mono text-xs uppercase tracking-wider text-muted">{f.label}</dt>
-                  <dd className="mt-0.5 font-medium">{f.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </Section>
+            <p className="mt-6 font-mono text-[11px] text-muted/70">* {t.demos.note}</p>
+          </section>
 
-        <Section id="experiencia" title={t.experience.heading}>
-          <ol className="space-y-14">
-            {t.experience.jobs.map((job) => (
-              <li key={job.org + job.role}>
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 className="text-lg font-semibold">
-                    {job.role} <span className="text-muted">·</span> <span className="text-accent">{job.org}</span>
-                  </h3>
-                  <p className="font-mono text-xs text-muted">{job.period}</p>
-                </div>
-                <p className="mt-1 text-sm text-muted">{job.place}</p>
-                <p className="mt-4 leading-relaxed">{job.summary}</p>
-                {job.points && (
-                  <ul className="mt-3 list-disc space-y-1.5 pl-5 text-muted marker:text-accent">
-                    {job.points.map((p) => (
-                      <li key={p}>{p}</li>
-                    ))}
-                  </ul>
-                )}
-                {job.bullets && (
-                  <>
-                    <p className="mt-8 font-mono text-xs uppercase tracking-wider text-muted">{t.experience.built}</p>
-                    <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                      {job.bullets.map((b) => (
-                        <article key={b.title} className="flex flex-col rounded-xl border border-line bg-surface p-5">
-                          <h4 className="font-semibold leading-snug">{b.title}</h4>
-                          <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{b.text}</p>
-                          <p className="mt-4 border-t border-line pt-3 font-mono text-xs text-accent">{b.stack}</p>
-                        </article>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </li>
-            ))}
-          </ol>
-        </Section>
-
-        <Section id="proyectos" title={t.projects.heading}>
-          <p className="mb-8 max-w-2xl text-muted">{t.projects.intro}</p>
-          <div className="grid gap-5 md:grid-cols-2">
-            {featured.map((p) => (
-              <article key={p.name} className="flex flex-col rounded-2xl border border-line bg-surface p-6 transition-shadow hover:shadow-md">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="text-xl font-semibold">{p.name}</h3>
-                  <span className="font-mono text-xs text-muted">{p.period}</span>
-                </div>
-                <p className="mt-4 flex-1 leading-relaxed text-muted">{p.description}</p>
-                <div className="mt-5 flex flex-wrap gap-1.5">
-                  {p.stack.map((s) => (
-                    <Tag key={s}>{s}</Tag>
-                  ))}
-                </div>
-                <ProjectLinks code={p.code} demo={p.demo} labels={t.projects} />
-              </article>
-            ))}
-          </div>
-          <ul className="mt-5 divide-y divide-line rounded-2xl border border-line">
-            {others.map((p) => (
-              <li key={p.name} className="grid gap-3 p-5 sm:grid-cols-[1fr_auto] sm:items-start sm:gap-8">
-                <div>
-                  <div className="flex flex-wrap items-baseline gap-x-3">
-                    <h3 className="font-semibold">{p.name}</h3>
-                    <span className="font-mono text-xs text-muted">{p.period}</span>
+          {/* Proyectos (bento) */}
+          <section id="proyectos" className="py-24">
+            <SectionHeading kicker={t.projects.heading} title={lang === "es" ? "Proyectos" : "Projects"} intro={t.projects.intro} />
+            <div className="grid gap-4 md:grid-cols-6">
+              <Reveal className="md:col-span-4 md:row-span-2">
+                <Spotlight tilt className="relative flex h-full flex-col overflow-hidden p-7">
+                  <div className="absolute -right-24 -top-24 size-72 rounded-full bg-accent/10 blur-3xl" />
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-2xl font-semibold sm:text-3xl">{main.name}</h3>
+                    <span className="font-mono text-xs text-muted">{main.period}</span>
                   </div>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted">{p.description}</p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {p.stack.map((s) => (
+                  <p className="mt-4 max-w-2xl flex-1 leading-relaxed text-muted sm:text-lg">{main.description}</p>
+                  <div className="mt-6 flex flex-wrap gap-1.5">
+                    {main.stack.map((s) => (
                       <Tag key={s}>{s}</Tag>
                     ))}
                   </div>
-                </div>
-                <ProjectLinks code={p.code} demo={p.demo} labels={t.projects} compact />
-              </li>
-            ))}
-          </ul>
-        </Section>
+                  <ProjectLinks code={main.code} demo={main.demo} labels={t.projects} />
+                </Spotlight>
+              </Reveal>
+              {rest.map((p, i) => (
+                <Reveal key={p.name} delay={i * 0.06} className={i === 0 ? "md:col-span-2 md:row-span-2" : "md:col-span-2"}>
+                  <Spotlight tilt className="flex h-full flex-col p-6">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <h3 className="text-lg font-semibold">{p.name}</h3>
+                      <span className="font-mono text-[11px] text-muted">{p.period}</span>
+                    </div>
+                    <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{p.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {p.stack.slice(0, 4).map((s) => (
+                        <Tag key={s}>{s}</Tag>
+                      ))}
+                    </div>
+                    <ProjectLinks code={p.code} demo={p.demo} labels={t.projects} />
+                  </Spotlight>
+                </Reveal>
+              ))}
+            </div>
+          </section>
 
-        <Section id="habilidades" title={t.skills.heading}>
-          <div className="grid gap-8 sm:grid-cols-2">
-            {t.skills.groups.map((g) => (
-              <div key={g.name}>
-                <h3 className="text-sm font-semibold">{g.name}</h3>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {g.items.map((s) => (
-                    <span key={s} className="rounded-md bg-accent-soft px-2.5 py-1 text-sm text-fg">
-                      {s}
-                    </span>
-                  ))}
+          {/* Habilidades */}
+          <section id="habilidades" className="py-24">
+            <SectionHeading kicker={t.skills.heading} title={lang === "es" ? "Con qué trabajo" : "What I work with"} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {t.skills.groups.map((g, i) => (
+                <Reveal key={g.name} delay={i * 0.08} className="h-full">
+                  <Spotlight className="h-full p-6">
+                    <h3 className="font-semibold">{g.name}</h3>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {g.items.map((s) => (
+                        <span
+                          key={s}
+                          className="rounded-lg border border-line bg-surface-strong px-2.5 py-1 text-sm transition hover:border-accent/50 hover:text-accent hover:shadow-[0_0_18px_-6px_var(--accent)]"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </Spotlight>
+                </Reveal>
+              ))}
+            </div>
+          </section>
+
+          {/* Formación */}
+          <section id="formacion" className="py-24">
+            <SectionHeading kicker={t.education.heading} title={lang === "es" ? "Formación" : "Education"} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {t.education.items.map((e, i) => (
+                <Reveal key={e.title} delay={i * 0.08} className="h-full">
+                  <Spotlight className="h-full p-6">
+                    <p className="font-mono text-xs text-accent">{e.period}</p>
+                    <h3 className="mt-2 font-semibold leading-snug">{e.title}</h3>
+                    <p className="text-sm text-accent-2">{e.org}</p>
+                    <p className="mt-3 text-sm leading-relaxed text-muted">{e.note}</p>
+                  </Spotlight>
+                </Reveal>
+              ))}
+            </div>
+          </section>
+
+          {/* Contacto */}
+          <section id="contacto" className="py-24">
+            <Reveal>
+              <div className="relative overflow-hidden rounded-3xl border border-line bg-surface px-6 py-16 text-center sm:px-12 sm:py-24">
+                <div className="absolute left-1/2 top-0 -z-10 size-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20 blur-[110px]" />
+                <div className="grid-bg absolute inset-0 -z-20 opacity-40" />
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">{t.nav.contact}</p>
+                <h2 className="mt-4 text-4xl font-semibold tracking-tight sm:text-6xl">{t.contact.heading}</h2>
+                <p className="mx-auto mt-5 max-w-xl text-muted sm:text-lg">{t.contact.text}</p>
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href={`mailto:${links.email}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-bg shadow-[0_0_40px_-8px_var(--accent)] transition hover:shadow-[0_0_60px_-6px_var(--accent)]"
+                  >
+                    <Icon name="mail" />
+                    {links.email}
+                  </a>
+                  <button
+                    onClick={copyEmail}
+                    className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm transition hover:border-fg/40"
+                  >
+                    <Icon name="copy" />
+                    <span aria-live="polite">{copied ? t.contact.copied : t.contact.copy}</span>
+                  </button>
+                </div>
+                <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm">
+                  <a href={links.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-muted transition hover:text-fg">
+                    <Icon name="linkedin" /> LinkedIn <Icon name="arrow" className="size-3.5" />
+                  </a>
+                  <a href={links.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-muted transition hover:text-fg">
+                    <Icon name="github" /> GitHub <Icon name="arrow" className="size-3.5" />
+                  </a>
+                  <a href={links.cv[lang]} download className="inline-flex items-center gap-1.5 text-muted transition hover:text-fg">
+                    <Icon name="download" /> {t.hero.cv}
+                  </a>
                 </div>
               </div>
-            ))}
-          </div>
-        </Section>
-
-        <Section id="formacion" title={t.education.heading}>
-          <ul className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
-            {t.education.items.map((e) => (
-              <li key={e.title}>
-                <p className="font-mono text-xs text-muted">{e.period}</p>
-                <h3 className="mt-1 font-semibold leading-snug">{e.title}</h3>
-                <p className="text-sm text-accent">{e.org}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{e.note}</p>
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        <Section id="contacto" title={t.nav.contact}>
-          <h3 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t.contact.heading}</h3>
-          <p className="mt-4 max-w-xl text-muted sm:text-lg">{t.contact.text}</p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href={`mailto:${links.email}`}
-              className="inline-flex items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-sm font-medium text-bg transition-opacity hover:opacity-85"
-            >
-              <Icon name="mail" />
-              {links.email}
-            </a>
-            <button
-              onClick={copyEmail}
-              className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm transition-colors hover:border-fg"
-            >
-              <Icon name="copy" />
-              <span aria-live="polite">{copied ? t.contact.copied : t.contact.copy}</span>
-            </button>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-5 text-sm">
-            <a href={links.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-muted hover:text-fg">
-              <Icon name="linkedin" /> LinkedIn <Icon name="arrow" className="size-3.5" />
-            </a>
-            <a href={links.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-muted hover:text-fg">
-              <Icon name="github" /> GitHub <Icon name="arrow" className="size-3.5" />
-            </a>
-            <a href={links.cv[lang]} download className="inline-flex items-center gap-1.5 text-muted hover:text-fg">
-              <Icon name="download" /> {t.hero.cv}
-            </a>
-          </div>
-        </Section>
+            </Reveal>
+          </section>
+        </div>
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-5xl flex-wrap justify-between gap-2 px-4 py-8 text-xs text-muted sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-4 py-8 text-xs text-muted sm:px-6">
           <p>© 2026 Álvaro Valdivia Miranda</p>
           <p>{t.footer}</p>
         </div>
       </footer>
+      </MotionConfig>
     </>
   );
 }
 
-function ProjectLinks({
-  code,
-  demo,
-  labels,
-  compact = false,
-}: {
-  code?: string;
-  demo?: string;
-  labels: { code: string; demo: string };
-  compact?: boolean;
-}) {
-  const cls = "inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-accent";
+function ProjectLinks({ code, demo, labels }: { code?: string; demo?: string; labels: { code: string; demo: string } }) {
+  const cls = "inline-flex items-center gap-1.5 text-sm font-medium text-fg/90 transition-colors hover:text-accent";
   return (
-    <div className={`flex gap-5 ${compact ? "" : "mt-6 border-t border-line pt-4"}`}>
+    <div className="mt-6 flex gap-5 border-t border-line pt-4">
       {code && (
         <a href={code} target="_blank" rel="noopener noreferrer" className={cls}>
           <Icon name="github" /> {labels.code}

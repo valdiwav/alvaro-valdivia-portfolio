@@ -1,41 +1,34 @@
 @import "tailwindcss";
 
+/* Tema oscuro con acentos luminosos (único tema). */
 :root {
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --fg: #18181b;
-  --muted: #5f5f68;
-  --line: #e7e5e4;
-  --accent: #0f6b66;
-  --accent-soft: #e3f1ef;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d0e10;
-    --surface: #15171a;
-    --fg: #ececee;
-    --muted: #9a9aa3;
-    --line: #26282c;
-    --accent: #5cc8bd;
-    --accent-soft: #12302d;
-  }
+  --bg: #06070a;
+  --surface: rgb(255 255 255 / 0.035);
+  --surface-strong: rgb(255 255 255 / 0.06);
+  --fg: #eceef2;
+  --muted: #8d93a0;
+  --line: rgb(255 255 255 / 0.09);
+  --accent: #5eead4;
+  --accent-2: #8b9cff;
+  --danger: #ff6b7d;
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
+  --color-accent-2: var(--accent-2);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 5rem;
 }
 
@@ -45,29 +38,83 @@ body {
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: rgb(94 234 212 / 0.25);
 }
 
-.reveal {
-  animation: reveal 0.6s ease-out both;
+.text-gradient {
+  background: linear-gradient(100deg, var(--accent) 0%, #a5f3fc 45%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-@keyframes reveal {
-  from {
+/* Tarjeta con brillo que sigue al cursor (--mx/--my los pone Spotlight). */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(94 234 212 / 0.55), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(94 234 212 / 0.07), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.spotlight:hover::before,
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+.grid-bg {
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 40%, #000 20%, transparent 70%);
+}
+
+.caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  vertical-align: -0.15em;
+  background: var(--accent);
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
     opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  .reveal {
+  .caret {
     animation: none;
   }
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
 }

@@ -30,7 +30,31 @@ type Project = {
 
 type Content = {
   nav: { experience: string; projects: string; skills: string; education: string; contact: string };
-  hero: { badge: string; hello: string; title: string; summary: string; cv: string; contact: string };
+  hero: {
+    badge: string;
+    hello: string;
+    title: string;
+    summary: string;
+    cv: string;
+    contact: string;
+    stats: { value: string; label: string }[];
+  };
+  demos: {
+    kicker: string;
+    heading: string;
+    intro: string;
+    note: string;
+    agent: { title: string; caption: string; lines: { kind: "cmd" | "info" | "ok" | "skip" | "score"; text: string; detail?: string }[] };
+    validator: {
+      title: string;
+      caption: string;
+      fields: string[];
+      scanning: string;
+      error: string;
+      errorDetail: string;
+      ok: string;
+    };
+  };
   about: { heading: string; paragraphs: string[]; facts: { label: string; value: string }[] };
   experience: { heading: string; built: string; jobs: Job[] };
   projects: { heading: string; intro: string; code: string; demo: string; items: Project[] };
@@ -67,6 +91,40 @@ export const content: Record<Lang, Content> = {
         "Implemento software de nómina en ADP y construyo las herramientas que le ahorran trabajo al equipo: validadores, cargas masivas y agentes de IA. Trabajo con agentes LLM, Claude Code, Python y SQL.",
       cv: "Descargar CV",
       contact: "Contactar",
+      stats: [
+        { value: "3", label: "herramientas internas en uso en ADP" },
+        { value: "500", label: "conceptos por carga automatizada" },
+        { value: "28", label: "tests en mi agente de empleo" },
+      ],
+    },
+    demos: {
+      kicker: "En acción",
+      heading: "Así se ve lo que construyo",
+      intro: "Dos de mis herramientas, recreadas para que veas cómo funcionan.",
+      note: "Simulación ilustrativa con datos ficticios.",
+      agent: {
+        title: "job-agent",
+        caption: "Busca, filtra y puntúa ofertas cada mañana, y envía las mejores.",
+        lines: [
+          { kind: "cmd", text: "python -m job_agent run" },
+          { kind: "info", text: "Buscando en 5 portales", detail: "Get on Board · Remotive · Himalayas · Remote OK · WWR" },
+          { kind: "skip", text: "Filtros propios", detail: "seniority · ubicación · modalidad · sueldo · duplicados" },
+          { kind: "info", text: "Puntuando con LLM según mi perfil" },
+          { kind: "score", text: "9.2  AI Automation Engineer", detail: "agentes LLM + Python + SQL" },
+          { kind: "score", text: "8.6  Implementation Engineer", detail: "implementación + integraciones" },
+          { kind: "score", text: "8.1  AI Solutions Consultant", detail: "IA aplicada a procesos" },
+          { kind: "ok", text: "Enviado a Telegram y correo" },
+        ],
+      },
+      validator: {
+        title: "Validador de archivos bancarios",
+        caption: "Recorre cada registro carácter por carácter contra el formato del banco.",
+        fields: ["Tipo", "Cuenta", "Moneda", "Monto", "Beneficiario"],
+        scanning: "Validando registro 0142…",
+        error: "Error en «Cuenta», posición 9",
+        errorDetail: "Se esperaba un dígito y llegó «O».",
+        ok: "Lote validado: 1 error localizado",
+      },
     },
     about: {
       heading: "Sobre mí",
@@ -250,6 +308,40 @@ export const content: Record<Lang, Content> = {
         "I implement payroll software at ADP and build the tools that save my team time: validators, bulk loaders and AI agents. I work with LLM agents, Claude Code, Python and SQL.",
       cv: "Download CV",
       contact: "Get in touch",
+      stats: [
+        { value: "3", label: "internal tools in use at ADP" },
+        { value: "500", label: "payroll items per automated load" },
+        { value: "28", label: "tests in my job-search agent" },
+      ],
+    },
+    demos: {
+      kicker: "In action",
+      heading: "What my work looks like",
+      intro: "Two of my tools, recreated so you can see how they work.",
+      note: "Illustrative simulation with fictional data.",
+      agent: {
+        title: "job-agent",
+        caption: "Searches, filters and scores job posts every morning, then sends the best ones.",
+        lines: [
+          { kind: "cmd", text: "python -m job_agent run" },
+          { kind: "info", text: "Searching 5 job boards", detail: "Get on Board · Remotive · Himalayas · Remote OK · WWR" },
+          { kind: "skip", text: "Custom filters", detail: "seniority · location · work mode · salary · duplicates" },
+          { kind: "info", text: "Scoring with an LLM against my profile" },
+          { kind: "score", text: "9.2  AI Automation Engineer", detail: "LLM agents + Python + SQL" },
+          { kind: "score", text: "8.6  Implementation Engineer", detail: "implementation + integrations" },
+          { kind: "score", text: "8.1  AI Solutions Consultant", detail: "AI applied to processes" },
+          { kind: "ok", text: "Sent to Telegram and email" },
+        ],
+      },
+      validator: {
+        title: "Bank file validator",
+        caption: "Checks every record character by character against the bank's format.",
+        fields: ["Type", "Account", "Currency", "Amount", "Payee"],
+        scanning: "Validating record 0142…",
+        error: "Error in “Account”, position 9",
+        errorDetail: "Expected a digit, got “O”.",
+        ok: "Batch validated: 1 error found",
+      },
     },
     about: {
       heading: "About",
