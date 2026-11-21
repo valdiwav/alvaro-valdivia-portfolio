@@ -1,0 +1,139 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Résumé of Álvaro Valdivia Miranda: software implementation, process automation and applied AI.">
+  <title>Álvaro Valdivia Miranda | Résumé</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    :root { --accent: #1d4c5b; --ink: #252d33; --muted: #586067; --rule: #dce1e4; }
+    * { box-sizing: border-box; }
+    html { background: #e9eaec; }
+    body { margin: 0; color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; font-size: 9.4pt; line-height: 1.30; }
+    .sheet { width: 210mm; min-height: 297mm; margin: 8mm auto; padding: 12mm 15mm; background: #fff; }
+    header { padding-bottom: 3mm; border-bottom: 1.5pt solid var(--accent); }
+    h1 { margin: 0; font-size: 26pt; font-weight: 700; line-height: 1.08; letter-spacing: -.65pt; }
+    .headline { margin: 1.8mm 0 2.2mm; color: var(--accent); font-size: 10pt; font-weight: 600; }
+    .contact { margin: .55mm 0 0; color: var(--muted); font-size: 8.5pt; }
+    .sep { padding: 0 1.1mm; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: #92999e; text-underline-offset: 2px; }
+    a:hover, a:focus-visible { color: var(--accent); }
+    .summary { margin: 3mm 0 0; }
+    section { margin-top: 3.1mm; }
+    h2 { display: flex; align-items: center; gap: 3mm; margin: 0 0 1.8mm; color: var(--accent); font-size: 9.2pt; font-weight: 700; letter-spacing: 1.2pt; font-variant-ligatures: none; font-kerning: none; text-transform: uppercase; break-after: avoid; }
+    h2::after { content: ""; height: .6pt; flex: 1; background: var(--rule); }
+    .entry, .education-item, .skills { break-inside: avoid; page-break-inside: avoid; }
+    .entry + .entry { margin-top: 2.1mm; }
+    .entry-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 3mm; break-after: avoid; }
+    h3 { margin: 0; font-size: 9.5pt; line-height: 1.3; font-weight: 700; }
+    .date { flex: none; color: var(--muted); font-size: 8.4pt; white-space: nowrap; }
+    p { margin: .8mm 0 0; orphans: 2; widows: 2; }
+    ul { margin: 1mm 0 0; padding-left: 3.7mm; }
+    li { padding-left: .5mm; }
+    li + li { margin-top: .8mm; }
+    li::marker { color: var(--accent); }
+    strong { font-weight: 600; }
+    .education-item { margin-top: 1mm; }
+    .education-item p { margin-top: .25mm; }
+    .education-item .entry-heading p { margin: 0; }
+    .skills p { margin-top: .65mm; font-size: 9pt; }
+    .languages { margin-top: 1.4mm; font-size: 9pt; }
+    @media screen and (max-width: 820px) {
+      html { background: #fff; }
+      .sheet { width: 100%; min-height: 0; margin: 0; padding: 7vw; }
+      h1 { font-size: clamp(22pt, 6vw, 26pt); }
+      .entry-heading { flex-wrap: wrap; gap: .4mm 3mm; }
+      .contact { overflow-wrap: anywhere; }
+    }
+    @media print {
+      html, body { background: #fff; }
+      body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .sheet { margin: 0; }
+      a { text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet" aria-label="Résumé of Álvaro Valdivia Miranda">
+    <header>
+      <h1>Álvaro Valdivia Miranda</h1>
+      <p class="headline">Software Implementation · Process Automation · Applied AI</p>
+      <p class="contact">Greater Santiago, Chile<span class="sep">·</span><a href="mailto:valdivialvaro.8@gmail.com">valdivialvaro.8@gmail.com</a></p>
+      <p class="contact"><a href="https://www.linkedin.com/in/alvaro-valdivia-miranda-a5065b178/">linkedin.com/in/alvaro-valdivia-miranda-a5065b178</a><span class="sep">·</span><a href="https://github.com/valdiwav">github.com/valdiwav</a></p>
+    </header>
+
+    <p class="summary">Computer engineer implementing enterprise software and building automation tools and LLM agents adopted by implementation teams. Combines Python and SQL with the technical foundation, discipline and accountability developed in the Chilean Air Force.</p>
+
+    <section aria-labelledby="experience">
+      <h2 id="experience">Experience</h2>
+      <article class="entry">
+        <div class="entry-heading"><h3>Implementation Analyst · ADP</h3><span class="date">Apr 2025 - present</span></div>
+        <p>Payroll software implementation for clients operating in Peru: configuration, SQL, functional QA, documentation and support after go-live.</p>
+        <ul>
+          <li>Developed a <strong>bank payment file validator in C#/.NET</strong> that identifies formatting errors character by character and validates batches across multiple countries; <strong>used by the entire implementation team</strong>.</li>
+          <li>Automated <strong>payroll item uploads with Excel VBA + SQL</strong>: validates data and generates scripts to insert <strong>up to 500 items</strong> with their rules. Used by the Peru implementation back office.</li>
+          <li>Designed a <strong>payroll formula agent with Claude, deployed in Microsoft Copilot</strong>: proposes formulas from plain-language requests and includes a tool to update its knowledge base. Used by the implementation team.</li>
+        </ul>
+      </article>
+      <article class="entry">
+        <div class="entry-heading"><h3>Data Structures Teaching Assistant · PUCV</h3><span class="date">Mar 2023 - Jul 2024</span></div>
+        <p>Supported data structures teaching in C: designed exercises, assessed assignments and guided students in algorithm optimization.</p>
+      </article>
+      <article class="entry">
+        <div class="entry-heading"><h3>Intern · BELAT</h3><span class="date">Dec 2023 - Feb 2024</span></div>
+        <p>BPMN process modeling and task planning in Odoo; web development with JavaScript, Prisma and PostgreSQL; sales data cleansing in Jotform.</p>
+      </article>
+      <article class="entry">
+        <div class="entry-heading"><h3>Aircraft Maintenance Technician · Chilean Air Force</h3><span class="date">Dec 2018 - Dec 2020</span></div>
+        <p>Diagnosed and repaired helicopter electrical and electronic systems in a role requiring high accountability.</p>
+      </article>
+    </section>
+
+    <section aria-labelledby="projects">
+      <h2 id="projects">Projects</h2>
+      <article class="entry">
+        <div class="entry-heading"><h3><a href="https://github.com/valdiwav/job-agent">job-agent</a> · AI Job Search Agent</h3><span class="date">Nov 2026 - present</span></div>
+        <p>Searches five job boards daily, filters and scores listings with an LLM, and sends top matches via Telegram and email. <strong>Python, Gemini API, Pydantic, GitHub Actions and Telegram Bot API</strong>; autonomous execution, retries, fallback models and <strong>28 automated tests</strong>.</p>
+      </article>
+      <article class="entry">
+        <div class="entry-heading"><h3><a href="https://github.com/valdiwav/PerferctRep-public">PerfectRep</a> · Degree Project, PUCV</h3><span class="date">Apr 2024 - present</span></div>
+        <p>Mobile app providing real-time exercise technique analysis and correction for hypertrophy training through AI and computer vision. <strong>Kotlin, Firebase, TensorFlow (CNN) and Python</strong>. <a href="https://perfectrep.vercel.app">perfectrep.vercel.app</a></p>
+      </article>
+      <article class="entry">
+        <p><strong><a href="https://github.com/valdiwav/CyberStyle">Cyberstyle: SYNAPSE</a></strong> · Educational CSS game comparing KCR/MTF feedback (GameMaker, 2024).</p>
+      </article>
+    </section>
+
+    <section aria-labelledby="education">
+      <h2 id="education">Education &amp; Training</h2>
+      <div class="education-item">
+        <div class="entry-heading"><p><strong>B.Eng. in Computer Engineering (Ingeniería de Ejecución en Informática)</strong></p><span class="date">Mar 2021 - Dec 2024</span></div>
+        <p>Pontificia Universidad Católica de Valparaíso (PUCV).</p>
+      </div>
+      <div class="education-item">
+        <div class="entry-heading"><p><strong>Introduction to Networks (CCNA ITN)</strong> · Cisco Networking Academy.</p><span class="date">Mar - Jul 2023</span></div>
+      </div>
+      <div class="education-item">
+        <div class="entry-heading"><p><strong>Intensive Technical English Course</strong> · Academia Politécnica Aeronáutica (FACh).</p><span class="date">Jan - Jul 2019</span></div>
+        <p>Ranked first in the course.</p>
+      </div>
+      <div class="education-item">
+        <div class="entry-heading"><p><strong>Technical Qualification in Aircraft Electricity and Electronics</strong></p><span class="date">Jan 2017 - Dec 2018</span></div>
+        <p>Escuela de Especialidades “Sargento Menadier” (FACh). Student section leader (brigadier) in second year, appointed for academic performance and conduct.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="skills">
+      <h2 id="skills">Skills</h2>
+      <div class="skills">
+        <p><strong>AI &amp; automation:</strong> LLM agents, multi-agent systems, Claude Code, Codex, Copilot Agent Builder, Gemini API.</p>
+        <p><strong>Programming:</strong> Python, SQL, C#/.NET, JavaScript/TypeScript, Kotlin, C, VBA.</p>
+        <p><strong>Web &amp; data:</strong> Next.js, React, Node.js, Prisma, PostgreSQL, MySQL, Firebase, TensorFlow/CNN.</p>
+        <p><strong>Tools &amp; processes:</strong> Git/GitHub, GitHub Actions, Pydantic, functional QA, BPMN, Odoo, advanced Excel.</p>
+      </div>
+      <p class="languages"><strong>Languages:</strong> Spanish (native) · Technical English.</p>
+    </section>
+  </main>
+</body>
+</html>
