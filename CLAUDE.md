@@ -7,7 +7,8 @@ Web personal para enlazar desde LinkedIn. Sustituye a la antigua https://valdide
 ## Estado
 - Fase: publicado en https://alvaro-valdivia.vercel.app (proyecto Vercel `alvaro-valdivia`). Repo: https://github.com/valdiwav/alvaro-valdivia-portfolio
 - Despliegue: por ahora manual (`npx.cmd vercel@latest deploy --prod`). El auto-deploy al hacer push está pendiente: hay que dar acceso al repo a la app de Vercel en GitHub y luego `npx.cmd vercel@latest git connect`.
-- Pendiente: foto de perfil y datos que pide `docs/cv/NOTAS.md` (métricas de ADP, nivel de inglés). El repo antiguo `valdiwav/Portfolio` (Astro) sigue intacto.
+- 2026-11-20: datos al día (sin C#/.NET, PerfectRep con su repo nuevo, inglés profesional básico, titulado en ene 2025) y demo animada del agente de nómina (`PayrollAgentDemo` en `Demos.tsx`, genérica, sin nombre interno). Desplegado.
+- Pendiente: los PDF de `public/cv/` y `docs/cv/` son el CV antiguo y aún dicen C#/.NET. Hay que reemplazarlos por el CV nuevo de la sesión cv-codex (`Tools/linkedin-assets/cv`) cuando esté aprobado. También falta la foto de perfil. El repo antiguo `valdiwav/Portfolio` (Astro) sigue intacto.
 
 ## Stack y comandos
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4. Hosting: Vercel.
