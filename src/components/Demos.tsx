@@ -7,16 +7,316 @@ import type { content } from "@/content/profile";
 
 type Demos = (typeof content)["es"]["demos"];
 
-function Window({ title, children }: { title: string; children: React.ReactNode }) {
+function Window({ title, badge, children }: { title: string; badge?: string; children: React.ReactNode }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-[#0b0d12] shadow-[0_0_80px_-30px_rgba(94,234,212,0.35)]">
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
         <span className="size-2.5 rounded-full bg-[#ff5f57]/80" />
         <span className="size-2.5 rounded-full bg-[#febc2e]/80" />
         <span className="size-2.5 rounded-full bg-[#28c840]/80" />
-        <span className="ml-3 font-mono text-xs text-muted">{title}</span>
+        <span className="ml-3 truncate font-mono text-xs text-muted">{title}</span>
+        {badge && (
+          <span className="ml-auto shrink-0 rounded-full border border-line px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted">
+            {badge}
+          </span>
+        )}
       </div>
       {children}
+    </div>
+  );
+}
+
+/** Temporizadores en cadena que se cancelan al desmontar. */
+function useTimeline(active: boolean, script: (at: (ms: number, fn: () => void) => void, restart: () => void) => void) {
+  useEffect(() => {
+    if (!active) return;
+    let cancelled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const at = (ms: number, fn: () => void) => timers.push(setTimeout(() => !cancelled && fn(), ms));
+    const run = () => script(at, run);
+    run();
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- el guion es estable para cada demo
+  }, [active]);
+}
+
+/* ---------- Agente de IA para formulación de nómina ---------- */
+
+// Coordenadas del diagrama (viewBox 600 × 300).
+const NODE = {
+  input: { x: 65, y: 150, w: 120, h: 40 },
+  orch: { x: 210, y: 150, r: 32 },
+  agents: [55, 150, 245].map((y) => ({ x: 382, y, w: 186, h: 40 })),
+  output: { x: 536, y: 150, w: 96, h: 40 },
+  kb: { x: 536, y: 257, w: 108, h: 36 },
+};
+
+// Pasos: 0 escribe · 1 orquestador · 2 subagentes trabajando · 3-5 terminan · 6 fórmula · 7 actualiza · 8 base al día.
+const FINAL_STEP = 8;
+
+type Pt = [number, number];
+
+function Edge({ from, to, state, reduced }: { from: Pt; to: Pt; state: "idle" | "flow" | "done"; reduced: boolean }) {
+  const lit = state !== "idle";
+  return (
+    <g>
+      <line
+        x1={from[0]}
+        y1={from[1]}
+        x2={to[0]}
+        y2={to[1]}
+        strokeWidth={lit ? 1.6 : 1}
+        className="transition-[stroke] duration-500"
+        style={{ stroke: state === "flow" ? "var(--accent)" : lit ? "rgb(94 234 212 / 0.45)" : "rgb(255 255 255 / 0.12)" }}
+      />
+      {state === "flow" && !reduced && (
+        <motion.circle
+          r={3.5}
+          fill="var(--accent)"
+          filter="url(#pa-glow)"
+          initial={{ cx: from[0], cy: from[1] }}
+          animate={{ cx: [from[0], to[0]], cy: [from[1], to[1]] }}
+          transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }}
+        />
+      )}
+    </g>
+  );
+}
+
+function Box({
+  n,
+  label,
+  state,
+  size = 13,
+}: {
+  n: { x: number; y: number; w: number; h: number };
+  label: string;
+  state: "idle" | "work" | "done";
+  size?: number;
+}) {
+  const stroke = state === "done" ? "var(--accent)" : state === "work" ? "var(--accent-2)" : "rgb(255 255 255 / 0.14)";
+  return (
+    <g>
+      {state !== "idle" && (
+        <rect
+          x={n.x - n.w / 2}
+          y={n.y - n.h / 2}
+          width={n.w}
+          height={n.h}
+          rx={10}
+          fill="none"
+          stroke={stroke}
+          strokeWidth={3}
+          opacity={0.5}
+          filter="url(#pa-glow)"
+        />
+      )}
+      <rect
+        x={n.x - n.w / 2}
+        y={n.y - n.h / 2}
+        width={n.w}
+        height={n.h}
+        rx={10}
+        fill="#0e1118"
+        stroke={stroke}
+        strokeWidth={1.2}
+        className="transition-[stroke] duration-500"
+      />
+      <text
+        x={n.x}
+        y={n.y + size * 0.36}
+        textAnchor="middle"
+        fontSize={size}
+        className="font-mono transition-[fill] duration-500"
+        style={{ fill: state === "idle" ? "var(--muted)" : "var(--fg)" }}
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+export function PayrollAgentDemo({ demo, sim }: { demo: Demos["payroll"]; sim: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { amount: 0.35 });
+  const reduced = usePrefersReducedMotion();
+  const [typed, setTyped] = useState(0);
+  const [step, setStep] = useState(0);
+  const req = demo.request;
+
+  useTimeline(inView && !reduced, (at, restart) => {
+    setTyped(0);
+    setStep(0);
+    let t = 400;
+    for (let i = 1; i <= req.length; i++) at((t += 24), () => setTyped(i));
+    const steps = [500, 700, 1300, 650, 650, 700, 1300, 900];
+    steps.forEach((d, i) => at((t += d), () => setStep(i + 1)));
+    at(t + 5200, restart);
+  });
+
+  const s = reduced ? FINAL_STEP : step;
+  const shownReq = reduced ? req : req.slice(0, typed);
+  const typing = !reduced && typed < req.length;
+  const agentDone = (i: number) => s >= 3 + i;
+  const agentState = (i: number) => (agentDone(i) ? "done" : s >= 2 ? "work" : "idle");
+  const orchActive = s >= 1;
+
+  const { input, orch, agents, output, kb } = NODE;
+
+  return (
+    <div ref={ref}>
+      <Window title={`~/${demo.title}`} badge={sim}>
+        <div className="grid gap-6 p-5 lg:grid-cols-[1.15fr_1fr] lg:gap-8 lg:p-7">
+          {/* Diagrama */}
+          <div className="flex items-center">
+            <svg viewBox="0 0 600 300" className="h-auto w-full" role="img" aria-label={demo.caption}>
+              <defs>
+                <filter id="pa-glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="3.5" />
+                </filter>
+                <radialGradient id="pa-orch" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+                </radialGradient>
+              </defs>
+
+              <Edge from={[input.x + input.w / 2, input.y]} to={[orch.x - orch.r, orch.y]} reduced={reduced} state={s === 1 ? "flow" : s >= 2 ? "done" : "idle"} />
+              {agents.map((a, i) => (
+                <Edge
+                  key={`in${i}`}
+                  from={[orch.x + orch.r, orch.y]}
+                  to={[a.x - a.w / 2, a.y]}
+                  reduced={reduced}
+                  state={agentDone(i) ? "done" : s >= 2 ? "flow" : "idle"}
+                />
+              ))}
+              {agents.map((a, i) => (
+                <Edge
+                  key={`out${i}`}
+                  from={[a.x + a.w / 2, a.y]}
+                  to={[output.x - output.w / 2, output.y]}
+                  reduced={reduced}
+                  state={s >= 6 ? "done" : agentDone(i) ? "flow" : "idle"}
+                />
+              ))}
+              <Edge
+                from={[output.x, output.y + output.h / 2]}
+                to={[kb.x, kb.y - kb.h / 2]}
+                reduced={reduced}
+                state={s === 7 ? "flow" : s >= FINAL_STEP ? "done" : "idle"}
+              />
+
+              <Box n={input} label={demo.nodes.input} state={typed > 0 || reduced ? "done" : "idle"} size={12} />
+
+              {/* Orquestador */}
+              <circle cx={orch.x} cy={orch.y} r={orch.r * 2} fill="url(#pa-orch)" opacity={orchActive ? 1 : 0} className="transition-opacity duration-700" />
+              {orchActive && s < 6 && !reduced && (
+                <motion.circle
+                  cx={orch.x}
+                  cy={orch.y}
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth={1}
+                  initial={{ r: orch.r, opacity: 0.7 }}
+                  animate={{ r: orch.r + 22, opacity: 0 }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeOut" }}
+                />
+              )}
+              <circle
+                cx={orch.x}
+                cy={orch.y}
+                r={orch.r}
+                fill="#0e1118"
+                strokeWidth={1.5}
+                className="transition-[stroke] duration-500"
+                style={{ stroke: orchActive ? "var(--accent)" : "rgb(255 255 255 / 0.14)" }}
+              />
+              <circle cx={orch.x} cy={orch.y} r={9} style={{ fill: orchActive ? "var(--accent)" : "rgb(255 255 255 / 0.18)" }} className="transition-[fill] duration-500" />
+              {[0, 1, 2].map((k) => {
+                const ang = (-90 + k * 120) * (Math.PI / 180);
+                return (
+                  <circle
+                    key={k}
+                    cx={orch.x + Math.cos(ang) * 19}
+                    cy={orch.y + Math.sin(ang) * 19}
+                    r={3}
+                    style={{ fill: orchActive ? "var(--accent-2)" : "rgb(255 255 255 / 0.18)" }}
+                  />
+                );
+              })}
+              <text x={orch.x} y={orch.y + orch.r + 20} textAnchor="middle" fontSize={12} className="font-mono" style={{ fill: orchActive ? "var(--fg)" : "var(--muted)" }}>
+                {demo.nodes.orchestrator}
+              </text>
+
+              {agents.map((a, i) => (
+                <Box key={i} n={a} label={demo.agents[i].name} state={agentState(i)} size={12} />
+              ))}
+              <Box n={output} label={demo.nodes.output} state={s >= 6 ? "done" : "idle"} />
+              <Box n={kb} label={demo.nodes.knowledge} state={s >= FINAL_STEP ? "done" : s === 7 ? "work" : "idle"} size={12} />
+            </svg>
+          </div>
+
+          {/* Panel de texto */}
+          <div className="flex min-w-0 flex-col gap-4 font-mono text-[12px] sm:text-[13px]">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted">{demo.requestLabel}</p>
+              <p className="mt-1.5 min-h-[3.2em] rounded-lg border border-line bg-surface px-3 py-2 leading-relaxed text-fg">
+                {shownReq}
+                {typing && <span className="caret ml-0.5" />}
+              </p>
+            </div>
+
+            <ul className="space-y-2">
+              {demo.agents.map((a, i) => {
+                const st = agentState(i);
+                return (
+                  <li key={a.name} className="flex gap-2.5">
+                    <span
+                      className={`mt-[0.45em] size-2 shrink-0 rounded-full transition-colors duration-500 ${
+                        st === "done" ? "bg-accent shadow-[0_0_8px_var(--accent)]" : st === "work" ? "animate-pulse bg-accent-2" : "bg-white/15"
+                      }`}
+                    />
+                    <span className="min-w-0">
+                      <span className={st === "idle" ? "text-muted" : "text-fg"}>{a.name}</span>
+                      <span className="block truncate text-[11px] text-muted/80">
+                        {st === "done" ? <span className="text-accent">✓ {a.result}</span> : st === "work" ? demo.working : a.task}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <motion.div
+              initial={false}
+              animate={{ opacity: s >= 6 ? 1 : 0.15, y: s >= 6 || reduced ? 0 : 6 }}
+              transition={{ duration: 0.4 }}
+              className="rounded-lg border border-accent/30 bg-accent/[0.06] px-3 py-2.5"
+            >
+              <p className="text-[10px] uppercase tracking-wider text-accent">{demo.formulaLabel}</p>
+              <p className="mt-1 break-words font-semibold text-fg">{demo.formula}</p>
+              <p className="mt-1.5 font-sans text-[13px] leading-snug text-muted">{demo.explanation}</p>
+            </motion.div>
+
+            <motion.p
+              initial={false}
+              animate={{ opacity: s >= FINAL_STEP ? 1 : 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-wrap items-center gap-x-2 text-[#86efac]"
+              aria-hidden={s < FINAL_STEP}
+            >
+              <span>↻ {demo.knowledge}</span>
+              <span className="text-[11px] text-muted">{demo.knowledgeDetail}</span>
+            </motion.p>
+          </div>
+        </div>
+      </Window>
+      <p className="mt-4 text-sm text-muted">
+        <span className="font-medium text-fg">{demo.heading}.</span> {demo.caption}
+      </p>
     </div>
   );
 }
