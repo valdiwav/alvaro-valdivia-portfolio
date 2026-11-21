@@ -6,7 +6,7 @@ import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
 import { content, links, type Lang } from "@/content/profile";
 import AgentNetwork from "./AgentNetwork";
 import SmoothScroll from "./SmoothScroll";
-import { JobAgentTerminal, ValidatorDemo } from "./Demos";
+import { JobAgentTerminal, PayrollAgentDemo, ValidatorDemo } from "./Demos";
 
 const STORAGE_KEY = "lang";
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -411,6 +411,9 @@ export default function Portfolio() {
           {/* Demos */}
           <section id="en-accion" className="py-24">
             <SectionHeading kicker={t.demos.kicker} title={t.demos.heading} intro={t.demos.intro} />
+            <Reveal className="mb-8">
+              <PayrollAgentDemo demo={t.demos.payroll} sim={t.demos.sim} />
+            </Reveal>
             <div className="grid gap-8 lg:grid-cols-2">
               <Reveal>
                 <JobAgentTerminal demo={t.demos.agent} />
