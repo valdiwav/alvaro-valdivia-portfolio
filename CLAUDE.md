@@ -20,7 +20,9 @@ Web personal para enlazar desde LinkedIn. Sustituye a la antigua https://valdide
 - `docs/cv/`: encargo a Codex y HTML del CV · `public/cv/`: PDF descargables.
 
 ## Convenciones
-- Diseño minimalista y profesional: un solo acento (verde azulado, `--accent`), Geist y Geist Mono, modo claro y oscuro con variables en `globals.css`.
+- Diseño «llamativo pero elegante»: tema oscuro único con acentos luminosos (`--accent` turquesa, `--accent-2` índigo), Geist y Geist Mono, variables en `globals.css`.
+- Movimiento con Motion (`motion/react`, dentro de `MotionConfig reducedMotion="user"`) y scroll suave con Lenis. Todo debe funcionar con «reducir movimiento»: usa `usePrefersReducedMotion` (no `useReducedMotion`, que rompe la hidratación).
+- Piezas: `AgentNetwork` (canvas del hero), `Demos.tsx` (terminal de job-agent y validador; datos ficticios, marcados como simulación), `Spotlight` y `Reveal` en `Portfolio.tsx`.
 - No publicar teléfono ni WhatsApp.
 - Foto: el hueco con las iniciales «AV» está en el hero; cámbialo por `next/image` con `public/foto.jpg`.
 - No inventar logros ni cifras: solo lo que está en `docs/perfil.md`.
