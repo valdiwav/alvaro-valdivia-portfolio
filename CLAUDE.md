@@ -5,9 +5,9 @@ Web personal para enlazar desde LinkedIn. Sustituye a la antigua https://valdide
 @AGENTS.md
 
 ## Estado
-- Fase: web y CV (ES/EN, 1 página A4) terminados y verificados en local; falta que el usuario los revise.
-- Pendiente: foto de perfil, repo en GitHub, despliegue en Vercel y datos que pide `docs/cv/NOTAS.md` (métricas de ADP, nivel de inglés).
-- Siguiente paso: revisión del usuario, luego subir el repo y desplegar.
+- Fase: publicado en https://alvaro-valdivia.vercel.app (proyecto Vercel `alvaro-valdivia`). Repo: https://github.com/valdiwav/alvaro-valdivia-portfolio
+- Despliegue: por ahora manual (`npx.cmd vercel@latest deploy --prod`). El auto-deploy al hacer push está pendiente: hay que dar acceso al repo a la app de Vercel en GitHub y luego `npx.cmd vercel@latest git connect`.
+- Pendiente: foto de perfil y datos que pide `docs/cv/NOTAS.md` (métricas de ADP, nivel de inglés). El repo antiguo `valdiwav/Portfolio` (Astro) sigue intacto.
 
 ## Stack y comandos
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4. Hosting: Vercel.
