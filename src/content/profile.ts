@@ -44,6 +44,22 @@ type Content = {
     heading: string;
     intro: string;
     note: string;
+    sim: string;
+    payroll: {
+      title: string;
+      heading: string;
+      caption: string;
+      nodes: { input: string; orchestrator: string; output: string; knowledge: string };
+      requestLabel: string;
+      request: string;
+      agents: { name: string; task: string; result: string }[];
+      working: string;
+      formulaLabel: string;
+      formula: string;
+      explanation: string;
+      knowledge: string;
+      knowledgeDetail: string;
+    };
     agent: { title: string; caption: string; lines: { kind: "cmd" | "info" | "ok" | "skip" | "score"; text: string; detail?: string }[] };
     validator: {
       title: string;
@@ -66,7 +82,7 @@ type Content = {
 
 const projectsStack = {
   jobAgent: ["Python", "Gemini API", "Pydantic", "GitHub Actions", "Telegram Bot API"],
-  perfectRep: ["Kotlin", "TensorFlow", "Python", "Firebase", "Android"],
+  perfectRep: ["Kotlin", "MoveNet", "TensorFlow Lite", "CameraX", "Firebase"],
   cyberstyle: ["GameMaker", "CSS", "HTML", "Análisis de datos"],
   lnkut: ["Next.js", "React", "Prisma", "PostgreSQL", "Tailwind CSS"],
   pcForge: ["React", "TypeScript", "Sass", "MySQL"],
@@ -74,7 +90,7 @@ const projectsStack = {
 
 const urls = {
   jobAgent: "https://github.com/valdiwav/job-agent",
-  perfectRep: { code: "https://github.com/valdiwav/PerferctRep-public", demo: "https://perfectrep.vercel.app" },
+  perfectRep: { code: "https://github.com/valdiwav/PerfectRep", demo: "https://perfectrep.vercel.app" },
   cyberstyle: "https://github.com/valdiwav/CyberStyle",
   lnkut: { code: "https://github.com/valdiwav/url-shortener", demo: "https://lnkut.vercel.app" },
   pcForge: "https://github.com/valdiwav/PcForgeReact",
@@ -88,7 +104,7 @@ export const content: Record<Lang, Content> = {
       hello: "Álvaro Valdivia Miranda",
       title: "Implementación de Software · Automatización de Procesos · IA Aplicada",
       summary:
-        "Implemento software de nómina en ADP y construyo las herramientas que le ahorran trabajo al equipo: validadores, cargas masivas y agentes de IA. Trabajo con agentes LLM, Claude Code, Python y SQL.",
+        "Implemento software de nómina en ADP y construyo las herramientas que le ahorran trabajo al equipo: un agente de IA que propone fórmulas de nómina, un validador de archivos bancarios y cargas masivas. Trabajo con agentes LLM, Claude Code, Python y SQL.",
       cv: "Descargar CV",
       contact: "Contactar",
       stats: [
@@ -100,8 +116,29 @@ export const content: Record<Lang, Content> = {
     demos: {
       kicker: "En acción",
       heading: "Así se ve lo que construyo",
-      intro: "Dos de mis herramientas, recreadas para que veas cómo funcionan.",
-      note: "Simulación ilustrativa con datos ficticios.",
+      intro: "Tres de mis herramientas, recreadas para que veas cómo funcionan.",
+      note: "Simulaciones ilustrativas con datos ficticios. No muestran código, datos ni clientes reales.",
+      sim: "Simulación",
+      payroll: {
+        title: "agente-formulacion-nomina",
+        heading: "Agente de IA para formulación de nómina",
+        caption:
+          "Un orquestador reparte el requerimiento entre subagentes y skills, propone la fórmula con su explicación y actualiza su propia base de conocimiento.",
+        nodes: { input: "Requerimiento", orchestrator: "Orquestador", output: "Fórmula", knowledge: "Conocimiento" },
+        requestLabel: "Requerimiento en lenguaje simple",
+        request: "Bono de asistencia: 5 % del sueldo base si no tiene ausencias en el mes.",
+        agents: [
+          { name: "Tablas y conceptos", task: "tablas de fórmulas · conceptos de pago · manual", result: "SUELDO_BASE y DIAS_AUSENCIA encontrados" },
+          { name: "Normativa y seguridad", task: "reglas de la empresa · país", result: "Regla permitida, sin datos sensibles" },
+          { name: "Validación", task: "sintaxis · casos de prueba", result: "3 de 3 casos correctos" },
+        ],
+        working: "trabajando…",
+        formulaLabel: "Fórmula propuesta",
+        formula: "SI(DIAS_AUSENCIA = 0; SUELDO_BASE × 0,05; 0)",
+        explanation: "Paga el 5 % del sueldo base solo si el trabajador no registra ausencias en el período.",
+        knowledge: "Base de conocimiento actualizada",
+        knowledgeDetail: "+1 patrón: bono condicionado a asistencia",
+      },
       agent: {
         title: "job-agent",
         caption: "Busca, filtra y puntúa ofertas cada mañana, y envía las mejores.",
@@ -136,7 +173,7 @@ export const content: Record<Lang, Content> = {
         { label: "Ubicación", value: "Santiago, Chile" },
         { label: "Actualmente", value: "Analista de Implementación en ADP" },
         { label: "Busco", value: "IA aplicada, automatización, implementación e integración" },
-        { label: "Idiomas", value: "Español nativo · Inglés técnico" },
+        { label: "Idiomas", value: "Español nativo · Inglés profesional básico" },
       ],
     },
     experience: {
@@ -152,19 +189,19 @@ export const content: Record<Lang, Content> = {
             "Implementación de software de nómina para clientes con operación en Perú: configuración de la plataforma, bases de datos SQL, pruebas funcionales (QA), documentación y soporte después de la salida en vivo.",
           bullets: [
             {
+              title: "Agente de IA para formulación de nómina",
+              text: "Recibe un requerimiento en lenguaje simple, o el documento firmado por el cliente y el país, y propone la fórmula de nómina con su explicación. Un arnés con subagentes y skills consulta las tablas de fórmulas, los conceptos de pago y el manual de la plataforma, siguiendo la normativa y la seguridad de la empresa. Una herramienta propia mantiene al día su base de conocimiento. Lo usa el equipo de implementación y pronto se extenderá a Chile, Perú y Argentina.",
+              stack: "Diseñado en Claude · desplegado en Microsoft Copilot",
+            },
+            {
               title: "Validador de archivos de transferencias bancarias",
-              text: "Compara cada archivo de pago, carácter por carácter, con el formato que exige cada banco y cliente, e indica qué campo falla, por qué y dónde. Valida lotes, compara archivos y admite formatos de varios países. Lo usa todo el equipo de implementación.",
-              stack: "C# / .NET · desarrollado con asistencia de IA",
+              text: "Compara cada archivo de pago de ancho fijo, carácter por carácter, con el formato de cada banco y cliente. Detecta el formato solo, explica qué campo falla, por qué y dónde, valida lotes y compara dos archivos. Lo usa todo el equipo de implementación.",
+              stack: "Construido con IA en C# / .NET, el stack del entorno corporativo",
             },
             {
               title: "Carga masiva de conceptos de pago",
               text: "Valida la planilla del cliente contra la base de destino (duplicados, afectaciones, códigos) y genera el script que inserta hasta 500 conceptos con sus reglas. Lo usa el backoffice de implementación de Perú.",
               stack: "Excel VBA · SQL",
-            },
-            {
-              title: "Agente de IA para formulación de nómina",
-              text: "Propone fórmulas de nómina a partir de un requerimiento escrito en lenguaje simple, siguiendo las reglas y la normativa de seguridad de la empresa. Incluye una herramienta que mantiene al día su base de conocimiento.",
-              stack: "Diseñado con Claude · desplegado en Microsoft Copilot",
             },
           ],
         },
@@ -217,7 +254,7 @@ export const content: Record<Lang, Content> = {
           name: "PerfectRep",
           period: "2024 — Actualidad",
           description:
-            "App móvil que analiza y corrige en tiempo real la técnica en ejercicios de hipertrofia (sentadilla, peso muerto, press de hombros y curl de bíceps) con visión por computadora y redes neuronales, y da retroalimentación inmediata.",
+            "Mi proyecto de título: una app Android que usa la cámara como entrenador. Con visión por computadora en el propio teléfono (MoveNet y TensorFlow Lite, sin enviar vídeo a ningún servidor) cuenta las repeticiones de sentadilla, peso muerto, press de hombros y curl de bíceps, avisa en tiempo real cuando la postura es incorrecta y estima el esfuerzo (RIR) de cada serie.",
           stack: projectsStack.perfectRep,
           code: urls.perfectRep.code,
           demo: urls.perfectRep.demo,
@@ -254,9 +291,9 @@ export const content: Record<Lang, Content> = {
       groups: [
         {
           name: "IA y automatización",
-          items: ["Agentes LLM", "Sistemas multiagente", "Prompt engineering", "Claude Code", "Codex", "Copilot Agent Builder", "Gemini API", "TensorFlow"],
+          items: ["Agentes LLM", "Sistemas multiagente", "Subagentes, skills y hooks", "Claude Code", "Codex", "Microsoft Copilot Studio", "Gemini API", "Prompt engineering", "TensorFlow Lite"],
         },
-        { name: "Lenguajes", items: ["Python", "SQL", "C# / .NET", "TypeScript", "JavaScript", "Kotlin", "C", "VBA"] },
+        { name: "Lenguajes", items: ["Python", "SQL", "JavaScript", "C", "Kotlin", "VBA"] },
         { name: "Web y datos", items: ["Next.js", "React", "Node.js", "Prisma", "PostgreSQL", "MySQL", "Firebase", "Tailwind CSS"] },
         { name: "Herramientas y procesos", items: ["Git / GitHub", "GitHub Actions", "Pydantic", "QA funcional", "BPMN", "Odoo", "Excel avanzado"] },
       ],
@@ -267,8 +304,8 @@ export const content: Record<Lang, Content> = {
         {
           title: "Ingeniería de Ejecución en Informática",
           org: "Pontificia Universidad Católica de Valparaíso",
-          period: "2021 — 2024",
-          note: "Desarrollo de software, bases de datos, IA aplicada y desarrollo web y móvil.",
+          period: "2021 — 2024 · titulado en 2025",
+          note: "Desarrollo de software, bases de datos, IA aplicada y desarrollo web y móvil. Egresé en diciembre de 2024 y me titulé en enero de 2025.",
         },
         {
           title: "Introducción a Redes (CCNA ITN)",
@@ -317,8 +354,29 @@ export const content: Record<Lang, Content> = {
     demos: {
       kicker: "In action",
       heading: "What my work looks like",
-      intro: "Two of my tools, recreated so you can see how they work.",
-      note: "Illustrative simulation with fictional data.",
+      intro: "Three of my tools, recreated so you can see how they work.",
+      note: "Illustrative simulations with fictional data. No real code, data or clients are shown.",
+      sim: "Simulation",
+      payroll: {
+        title: "payroll-formula-agent",
+        heading: "AI agent for payroll formulas",
+        caption:
+          "An orchestrator splits the requirement across subagents and skills, proposes the formula with an explanation and updates its own knowledge base.",
+        nodes: { input: "Request", orchestrator: "Orchestrator", output: "Formula", knowledge: "Knowledge" },
+        requestLabel: "Plain-language requirement",
+        request: "Attendance bonus: 5% of base salary if there are no absences in the month.",
+        agents: [
+          { name: "Tables & concepts", task: "formula tables · pay concepts · manual", result: "BASE_SALARY and ABSENCE_DAYS found" },
+          { name: "Policy & security", task: "company rules · country", result: "Rule allowed, no sensitive data" },
+          { name: "Validation", task: "syntax · test cases", result: "3 of 3 cases pass" },
+        ],
+        working: "working…",
+        formulaLabel: "Proposed formula",
+        formula: "IF(ABSENCE_DAYS = 0, BASE_SALARY × 0.05, 0)",
+        explanation: "Pays 5% of the base salary only if the employee has no absences in the period.",
+        knowledge: "Knowledge base updated",
+        knowledgeDetail: "+1 pattern: attendance-based bonus",
+      },
       agent: {
         title: "job-agent",
         caption: "Searches, filters and scores job posts every morning, then sends the best ones.",
@@ -353,7 +411,7 @@ export const content: Record<Lang, Content> = {
         { label: "Location", value: "Santiago, Chile" },
         { label: "Currently", value: "Implementation Analyst at ADP" },
         { label: "Looking for", value: "Applied AI, automation, implementation and integration" },
-        { label: "Languages", value: "Spanish (native) · Technical English" },
+        { label: "Languages", value: "Spanish (native) · English (limited working proficiency)" },
       ],
     },
     experience: {
@@ -369,19 +427,19 @@ export const content: Record<Lang, Content> = {
             "Payroll software implementation for clients operating in Peru: platform configuration, SQL databases, functional testing (QA), documentation and post-go-live support.",
           bullets: [
             {
+              title: "AI agent for payroll formulas",
+              text: "Takes a plain-language requirement, or the client's signed document plus the country, and proposes the payroll formula with an explanation. A harness of subagents and skills checks the formula tables, pay concepts and platform manual, following company policy and security rules. A custom tool keeps its knowledge base up to date. Used by the implementation team and soon rolling out to Chile, Peru and Argentina.",
+              stack: "Designed in Claude · deployed on Microsoft Copilot",
+            },
+            {
               title: "Bank transfer file validator",
-              text: "Checks each payment file character by character against the format required by each bank and client, and reports which field fails, why and where. Validates batches, compares files and supports formats from several countries. Used by the entire implementation team.",
-              stack: "C# / .NET · built with AI assistance",
+              text: "Checks each fixed-width payment file character by character against each bank's and client's format. Detects the format automatically, explains which field fails, why and where, validates batches and compares two files. Used by the entire implementation team.",
+              stack: "Built with AI in C# / .NET, the corporate stack",
             },
             {
               title: "Bulk payroll concept loader",
               text: "Validates the client's spreadsheet against the target database (duplicates, dependencies, codes) and generates the script that inserts up to 500 concepts with their rules. Used by the Peru implementation back office.",
               stack: "Excel VBA · SQL",
-            },
-            {
-              title: "AI agent for payroll formulas",
-              text: "Proposes payroll formulas from a plain-language requirement, following company rules and security policies. Includes a tool that keeps its knowledge base up to date.",
-              stack: "Designed with Claude · deployed on Microsoft Copilot",
             },
           ],
         },
@@ -434,7 +492,7 @@ export const content: Record<Lang, Content> = {
           name: "PerfectRep",
           period: "2024 — Present",
           description:
-            "Mobile app that analyzes and corrects exercise form in real time (squat, deadlift, shoulder press and biceps curl) using computer vision and neural networks, with instant feedback.",
+            "My degree project: an Android app that turns the phone camera into a coach. With on-device computer vision (MoveNet and TensorFlow Lite, no video ever leaves the phone) it counts reps for squats, deadlifts, shoulder presses and biceps curls, warns in real time when form is off and estimates the effort (RIR) of each set.",
           stack: projectsStack.perfectRep,
           code: urls.perfectRep.code,
           demo: urls.perfectRep.demo,
@@ -471,9 +529,9 @@ export const content: Record<Lang, Content> = {
       groups: [
         {
           name: "AI & automation",
-          items: ["LLM agents", "Multi-agent systems", "Prompt engineering", "Claude Code", "Codex", "Copilot Agent Builder", "Gemini API", "TensorFlow"],
+          items: ["LLM agents", "Multi-agent systems", "Subagents, skills & hooks", "Claude Code", "Codex", "Microsoft Copilot Studio", "Gemini API", "Prompt engineering", "TensorFlow Lite"],
         },
-        { name: "Languages", items: ["Python", "SQL", "C# / .NET", "TypeScript", "JavaScript", "Kotlin", "C", "VBA"] },
+        { name: "Languages", items: ["Python", "SQL", "JavaScript", "C", "Kotlin", "VBA"] },
         { name: "Web & data", items: ["Next.js", "React", "Node.js", "Prisma", "PostgreSQL", "MySQL", "Firebase", "Tailwind CSS"] },
         { name: "Tools & process", items: ["Git / GitHub", "GitHub Actions", "Pydantic", "Functional QA", "BPMN", "Odoo", "Advanced Excel"] },
       ],
@@ -484,8 +542,8 @@ export const content: Record<Lang, Content> = {
         {
           title: "B.Eng. in Computer Engineering",
           org: "Pontificia Universidad Católica de Valparaíso",
-          period: "2021 — 2024",
-          note: "Software development, databases, applied AI, and web and mobile development.",
+          period: "2021 — 2024 · degree conferred 2025",
+          note: "Software development, databases, applied AI, and web and mobile development. Completed coursework in December 2024; degree conferred in January 2025.",
         },
         {
           title: "Introduction to Networks (CCNA ITN)",
