@@ -5,9 +5,9 @@ Web personal para enlazar desde LinkedIn. Sustituye a la antigua https://valdide
 @AGENTS.md
 
 ## Estado
-- Fase: primera versión construida y verificada en local (ES/EN, claro/oscuro, móvil y escritorio).
-- Pendiente: CV de Codex (`docs/cv/`, PDF en `public/cv/`), foto de perfil, repo en GitHub y despliegue en Vercel.
-- Siguiente paso: revisar el CV con el usuario, subir el repo y desplegar.
+- Fase: web y CV (ES/EN, 1 página A4) terminados y verificados en local; falta que el usuario los revise.
+- Pendiente: foto de perfil, repo en GitHub, despliegue en Vercel y datos que pide `docs/cv/NOTAS.md` (métricas de ADP, nivel de inglés).
+- Siguiente paso: revisión del usuario, luego subir el repo y desplegar.
 
 ## Stack y comandos
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4. Hosting: Vercel.
