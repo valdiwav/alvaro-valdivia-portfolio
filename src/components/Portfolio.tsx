@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, MotionConfig, motion, useScroll, useSpring, useTransform } from "motion/react";
 import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
-import { content, links, type Lang } from "@/content/profile";
+import { content, links, type Lang, type Project } from "@/content/profile";
 import AgentNetwork from "./AgentNetwork";
 import SmoothScroll from "./SmoothScroll";
 import { JobAgentTerminal, PayrollAgentDemo, ValidatorDemo } from "./Demos";
@@ -442,7 +442,7 @@ export default function Portfolio() {
                       <Tag key={s}>{s}</Tag>
                     ))}
                   </div>
-                  <ProjectLinks code={main.code} demo={main.demo} labels={t.projects} />
+                  <ProjectLinks project={main} labels={t.projects} />
                 </Spotlight>
               </Reveal>
               {rest.map((p, i) => (
@@ -458,7 +458,7 @@ export default function Portfolio() {
                         <Tag key={s}>{s}</Tag>
                       ))}
                     </div>
-                    <ProjectLinks code={p.code} demo={p.demo} labels={t.projects} />
+                    <ProjectLinks project={p} labels={t.projects} />
                   </Spotlight>
                 </Reveal>
               ))}
@@ -559,7 +559,8 @@ export default function Portfolio() {
   );
 }
 
-function ProjectLinks({ code, demo, labels }: { code?: string; demo?: string; labels: { code: string; demo: string } }) {
+function ProjectLinks({ project, labels }: { project: Project; labels: { code: string; demo: string } }) {
+  const { code, demo, demoLabel } = project;
   const cls = "inline-flex items-center gap-1.5 text-sm font-medium text-fg/90 transition-colors hover:text-accent";
   return (
     <div className="mt-6 flex gap-5 border-t border-line pt-4">
@@ -570,7 +571,7 @@ function ProjectLinks({ code, demo, labels }: { code?: string; demo?: string; la
       )}
       {demo && (
         <a href={demo} target="_blank" rel="noopener noreferrer" className={cls}>
-          {labels.demo} <Icon name="arrow" className="size-3.5" />
+          {demoLabel ?? labels.demo} <Icon name="arrow" className="size-3.5" />
         </a>
       )}
     </div>
