@@ -18,13 +18,14 @@ type Job = {
   points?: string[];
 };
 
-type Project = {
+export type Project = {
   name: string;
   period: string;
   description: string;
   stack: string[];
   code?: string;
   demo?: string;
+  demoLabel?: string;
   featured?: boolean;
 };
 
@@ -90,7 +91,7 @@ const projectsStack = {
 
 const urls = {
   jobAgent: "https://github.com/valdiwav/job-agent",
-  perfectRep: { code: "https://github.com/valdiwav/PerfectRep", demo: "https://perfectrep.vercel.app" },
+  perfectRep: { code: "https://github.com/valdiwav/PerfectRep", demo: "https://perfectrep.vercel.app/" },
   cyberstyle: "https://github.com/valdiwav/CyberStyle",
   lnkut: { code: "https://github.com/valdiwav/url-shortener", demo: "https://lnkut.vercel.app" },
   pcForge: "https://github.com/valdiwav/PcForgeReact",
@@ -258,6 +259,7 @@ export const content: Record<Lang, Content> = {
           stack: projectsStack.perfectRep,
           code: urls.perfectRep.code,
           demo: urls.perfectRep.demo,
+          demoLabel: "Web de la alfa",
           featured: true,
         },
         {
@@ -496,6 +498,7 @@ export const content: Record<Lang, Content> = {
           stack: projectsStack.perfectRep,
           code: urls.perfectRep.code,
           demo: urls.perfectRep.demo,
+          demoLabel: "Alpha site",
           featured: true,
         },
         {
